@@ -1,11 +1,15 @@
 import { createBrowserRouter } from 'react-router-dom'
 import { lazy } from 'react'
 import App from '@/App'
-import { CreateTaskPage } from '@/pages/create-task'
+import { CreateTaskPage, DashboardPage, SettingsPage } from '@/pages'
 
 // Lazy load pages for code splitting
-const HomePage = lazy(() =>
-  Promise.resolve({
+const HomePage = lazy(() => {
+  import('@/services/onboarding').then(({ initializeOnboarding }) => {
+    // Initialize onboarding when home page loads
+    initializeOnboarding()
+  })
+  return Promise.resolve({
     default: () => (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -14,16 +18,22 @@ const HomePage = lazy(() =>
             Make high-impact work achievable in short, guided sessions
           </p>
           <a
-            href="/create"
+            href="/dashboard"
             className="mt-6 inline-block rounded-md bg-blue-600 px-6 py-2 text-white hover:bg-blue-700"
           >
-            Get Started
+            View Dashboard
+          </a>
+          <a
+            href="/create"
+            className="mt-3 ml-3 inline-block rounded-md border border-gray-300 bg-white px-6 py-2 text-gray-700 hover:bg-gray-50"
+          >
+            Create New Task
           </a>
         </div>
       </div>
     ),
   })
-)
+})
 
 /**
  * Get basename dynamically from window location or environment
@@ -79,6 +89,14 @@ export const router = createBrowserRouter(
         {
           path: '/create',
           element: <CreateTaskPage />,
+        },
+        {
+          path: '/dashboard',
+          element: <DashboardPage />,
+        },
+        {
+          path: '/settings',
+          element: <SettingsPage />,
         },
       ],
     },

@@ -4,3 +4,5 @@
  */
 
 export { CreateTaskPage } from './create-task'
+export { DashboardPage } from './dashboard'
+export { SettingsPage } from './settings'
