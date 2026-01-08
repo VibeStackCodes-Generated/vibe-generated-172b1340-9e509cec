@@ -1,5 +1,29 @@
 import { createBrowserRouter } from 'react-router-dom'
+import { lazy } from 'react'
 import App from '@/App'
+import { CreateTaskPage } from '@/pages/create-task'
+
+// Lazy load pages for code splitting
+const HomePage = lazy(() =>
+  Promise.resolve({
+    default: () => (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-50">FocusSprint</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
+            Make high-impact work achievable in short, guided sessions
+          </p>
+          <a
+            href="/create"
+            className="mt-6 inline-block rounded-md bg-blue-600 px-6 py-2 text-white hover:bg-blue-700"
+          >
+            Get Started
+          </a>
+        </div>
+      </div>
+    ),
+  })
+)
 
 /**
  * Get basename dynamically from window location or environment
@@ -50,11 +74,11 @@ export const router = createBrowserRouter(
       children: [
         {
           index: true,
-          element: (
-            <div className="flex min-h-screen items-center justify-center">
-              <p className="text-muted-foreground">Start building your app</p>
-            </div>
-          ),
+          element: <HomePage />,
+        },
+        {
+          path: '/create',
+          element: <CreateTaskPage />,
         },
       ],
     },
