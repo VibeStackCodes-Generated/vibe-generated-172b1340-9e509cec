@@ -25,6 +25,10 @@ This document describes how the sample data seeding and onboarding integration w
 - `isFirstRun()`: Checks if user is on first visit
 - `completeOnboarding()`: Manually mark onboarding complete
 - `resetOnboarding()`: Reset onboarding state to allow re-seeding
+- `reseedStarterTemplate()`: **NEW** - Replaces sample tasks with fresh ones while preserving user tasks
+  - Used by settings page when user clicks "Reset to Starter Template"
+  - Returns success status and count of reseeded tasks
+  - Preserves all user-created tasks (non-sample)
 
 #### 3. **Persistence Service** (`src/services/persistence.ts`)
 - Handles all localStorage operations for tasks
@@ -151,6 +155,7 @@ When user clicks "Clear All Tasks" in settings:
 ### Test Files
 - `src/services/seed.test.ts`: Tests for seed service
 - `src/services/onboarding.test.ts`: Tests for onboarding service
+- `src/services/integration.test.ts`: **NEW** - End-to-end integration tests for seeding and dashboard
 
 ### Key Test Scenarios
 1. Sample tasks have correct properties
@@ -161,12 +166,23 @@ When user clicks "Clear All Tasks" in settings:
 6. Reset allows re-seeding
 7. User tasks are preserved during reset
 8. Filters correctly identify sample vs user tasks
+9. **NEW**: Dashboard displays seeded data correctly
+10. **NEW**: Mixed task lists (sample + user) display properly
+11. **NEW**: Dashboard metrics calculated correctly with seeded data
+12. **NEW**: Reset to starter template preserves user tasks
+13. **NEW**: Complete user journey works end-to-end
 
 ## Integration Points
 
-### App.tsx & routes/index.tsx
-- Home page initializes onboarding on load
-- Routes defined for `/dashboard` and `/settings`
+### App.tsx (Root Component)
+- **NEW**: Uses `useEffect` hook to initialize onboarding on app startup
+- Ensures sample tasks are seeded before any page renders
+- Prevents race conditions and ensures data availability
+- Handles first-run experience seamlessly
+
+### routes/index.tsx
+- Routes defined for `/`, `/dashboard`, `/create`, and `/settings`
+- Home page displays landing page with navigation to dashboard/create
 
 ### Dashboard (pages/dashboard.tsx)
 - Displays all tasks with filtering
