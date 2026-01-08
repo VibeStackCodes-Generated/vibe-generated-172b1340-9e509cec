@@ -13,9 +13,9 @@ import {
 import {
   resetOnboarding,
   getOnboardingState,
+  reseedStarterTemplate,
 } from '@/services/onboarding'
 import {
-  getSampleTasksWithIds,
   getNonSampleTasks,
   getSampleTasksFromList,
 } from '@/services/seed'
@@ -54,51 +54,22 @@ export function SettingsPage() {
     setIsLoading(true)
 
     try {
-      // Get user tasks (non-sample tasks)
-      const userTasksData = userTasks
+      // Use the dedicated reseed function from onboarding service
+      const result = reseedStarterTemplate()
 
-      // Clear all tasks
-      clearAllTasks()
+      if (result.success) {
+        showMessage(
+          'success',
+          `Starter template reset successfully with ${result.seededCount} fresh tasks! Your custom tasks are preserved.`
+        )
 
-      // Re-seed sample tasks
-      const freshSampleTasks = getSampleTasksWithIds()
-      for (const sampleTask of freshSampleTasks) {
-        saveTask({
-          title: sampleTask.title,
-          description: sampleTask.description,
-          estimatedMinutes: sampleTask.estimatedMinutes,
-          nextStep: sampleTask.nextStep,
-          status: sampleTask.status,
-          createdAt: sampleTask.createdAt,
-          updatedAt: sampleTask.updatedAt,
-        })
+        // Redirect to dashboard after a short delay
+        setTimeout(() => {
+          navigate('/dashboard')
+        }, 2000)
+      } else {
+        showMessage('error', result.error || 'Failed to reset template')
       }
-
-      // Re-add user tasks
-      for (const userTask of userTasksData) {
-        saveTask({
-          title: userTask.title,
-          description: userTask.description,
-          estimatedMinutes: userTask.estimatedMinutes,
-          nextStep: userTask.nextStep,
-          status: userTask.status,
-          createdAt: userTask.createdAt,
-          updatedAt: userTask.updatedAt,
-        })
-      }
-
-      // Reset onboarding state
-      resetOnboarding()
-
-      showMessage(
-        'success',
-        'Starter template reset successfully! Your custom tasks are preserved.'
-      )
-
-      // Redirect to dashboard after a short delay
-      setTimeout(() => {
-        navigate('/dashboard')
-      }, 2000)
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to reset template'

@@ -3,13 +3,9 @@ import { lazy } from 'react'
 import App from '@/App'
 import { CreateTaskPage, DashboardPage, SettingsPage } from '@/pages'
 
-// Lazy load pages for code splitting
-const HomePage = lazy(() => {
-  import('@/services/onboarding').then(({ initializeOnboarding }) => {
-    // Initialize onboarding when home page loads
-    initializeOnboarding()
-  })
-  return Promise.resolve({
+// Lazy load home page
+const HomePage = lazy(() =>
+  Promise.resolve({
     default: () => (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -33,7 +29,7 @@ const HomePage = lazy(() => {
       </div>
     ),
   })
-})
+)
 
 /**
  * Get basename dynamically from window location or environment

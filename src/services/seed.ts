@@ -81,3 +81,44 @@ export function getNonSampleTasks(tasks: Task[]): Task[] {
 export function getSampleTasksFromList(tasks: Task[]): Task[] {
   return tasks.filter(task => task.id.startsWith('sample_'))
 }
+
+/**
+ * Reseed sample tasks - removes old sample tasks and creates new ones
+ * Used when user clicks "Reset to starter template" in settings
+ * Requires persistence module to be imported separately to avoid circular deps
+ */
+export function reseedSampleTasks(
+  getAllTasksFn: () => Task[],
+  saveTaskFn: (task: Omit<Task, 'id'>) => Task,
+  deleteTaskFn: (id: string) => boolean
+): Task[] {
+  const allTasks = getAllTasksFn()
+
+  // Get user-created tasks (non-sample)
+  const userTasks = getNonSampleTasks(allTasks)
+
+  // Remove all existing sample tasks
+  const sampleTasks = getSampleTasksFromList(allTasks)
+  for (const sampleTask of sampleTasks) {
+    deleteTaskFn(sampleTask.id)
+  }
+
+  // Create fresh sample tasks
+  const freshSampleTasks = getSampleTasksWithIds()
+  const seededTasks: Task[] = []
+
+  for (const sampleTask of freshSampleTasks) {
+    const saved = saveTaskFn({
+      title: sampleTask.title,
+      description: sampleTask.description,
+      estimatedMinutes: sampleTask.estimatedMinutes,
+      nextStep: sampleTask.nextStep,
+      status: sampleTask.status,
+      createdAt: sampleTask.createdAt,
+      updatedAt: sampleTask.updatedAt,
+    })
+    seededTasks.push(saved)
+  }
+
+  return seededTasks
+}

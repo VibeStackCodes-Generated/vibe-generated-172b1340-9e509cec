@@ -133,3 +133,80 @@ export function resetOnboarding(): void {
     sampleTasksCreated: false,
   })
 }
+
+/**
+ * Reseed starter template - replaces sample tasks with fresh ones
+ * Preserves user-created tasks
+ * Used when user clicks "Reset to starter template" in settings
+ */
+export function reseedStarterTemplate(): {
+  success: boolean
+  seededCount: number
+  error?: string
+} {
+  try {
+    const state = getOnboardingState()
+    const existingTasks = getAllTasks()
+
+    // Get user-created tasks (non-sample) to preserve them
+    const userTasks = getNonSampleTasks(existingTasks)
+
+    // Get all existing sample tasks to remove
+    const sampleTasks = getSampleTasksFromList(existingTasks)
+
+    // Create fresh sample tasks with new IDs
+    const freshSampleTasks = getSampleTasksWithIds()
+
+    // Build the final task list: fresh samples + preserved user tasks
+    const allTasks: Task[] = []
+
+    // Add fresh sample tasks
+    for (const sampleTask of freshSampleTasks) {
+      allTasks.push(sampleTask)
+    }
+
+    // Add user tasks
+    for (const userTask of userTasks) {
+      allTasks.push(userTask)
+    }
+
+    // Directly update localStorage with the new task list
+    try {
+      localStorage.setItem('focussprint:tasks', JSON.stringify(allTasks))
+    } catch (error) {
+      console.error('Error updating localStorage:', error)
+      throw new Error('Failed to update task storage')
+    }
+
+    // Update onboarding state to reflect reseeding
+    updateOnboardingState({
+      ...state,
+      sampleTasksCreated: true,
+    })
+
+    return {
+      success: true,
+      seededCount: freshSampleTasks.length,
+    }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Error reseeding starter template:', error)
+    return {
+      success: false,
+      seededCount: 0,
+      error: errorMessage,
+    }
+  }
+}
+
+/**
+ * Import helpers from seed module
+ * Using dynamic import to avoid circular dependencies
+ */
+function getNonSampleTasks(tasks: Task[]): Task[] {
+  return tasks.filter(task => !task.id.startsWith('sample_'))
+}
+
+function getSampleTasksFromList(tasks: Task[]): Task[] {
+  return tasks.filter(task => task.id.startsWith('sample_'))
+}
